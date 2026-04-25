@@ -80,14 +80,26 @@ class TradingDashboard {
 
     updateActivePairBadge() {
         const badge = document.getElementById('active-pair-badge');
-        if (!badge) return;
-        if (this.pairMode && this.activePairSymbol) {
-            const icon = this.pairMode === 'top_gainer' ? '▲' : '▼';
-            badge.textContent = `${icon} ${this.activePairSymbol}`;
-            badge.className = `badge ${this.pairMode === 'top_gainer' ? 'bg-success' : 'bg-danger'}`;
-        } else {
-            badge.textContent = '—';
-            badge.className = 'badge bg-secondary';
+        const signalLabel = document.getElementById('signal-pair-label');
+        if (badge) {
+            if (this.pairMode && this.activePairSymbol) {
+                const icon = this.pairMode === 'top_gainer' ? '▲' : '▼';
+                badge.textContent = `${icon} ${this.activePairSymbol}`;
+                badge.className = `badge ${this.pairMode === 'top_gainer' ? 'bg-success' : 'bg-danger'}`;
+            } else {
+                badge.textContent = '—';
+                badge.className = 'badge bg-secondary';
+            }
+        }
+        if (signalLabel) {
+            if (this.activePairSymbol) {
+                const icon = this.pairMode === 'top_gainer' ? '▲ ' : this.pairMode === 'top_loser' ? '▼ ' : '';
+                signalLabel.textContent = `${icon}${this.activePairSymbol}`;
+                signalLabel.className = `badge ${this.pairMode === 'top_gainer' ? 'bg-success' : this.pairMode === 'top_loser' ? 'bg-danger' : 'bg-primary'}`;
+            } else {
+                signalLabel.textContent = '—';
+                signalLabel.className = 'badge bg-secondary';
+            }
         }
     }
 
@@ -103,6 +115,7 @@ class TradingDashboard {
             if (data.success && data.pairs) {
                 this.allPairs = data.pairs;
                 this.renderPairs();
+                this.updateActivePairBadge();
             }
         } catch (e) {
             console.error('Futures pairs load error:', e);

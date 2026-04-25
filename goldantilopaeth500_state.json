@@ -1,15 +1,15 @@
 {
-  "balance": 17.476343660852407,
-  "available": 8.725044882258311,
+  "balance": 17.373389813211034,
+  "available": 8.673645289820431,
   "in_position": true,
   "position": {
-    "side": "short",
-    "entry_price": 86.5,
-    "size_base": 1.0117108414559646,
-    "notional": 87.51298778594094,
-    "margin": 8.751298778594094,
-    "entry_time": "2026-04-25T15:09:07.577677",
-    "trade_number": 3
+    "side": "long",
+    "entry_price": 86.55,
+    "size_base": 1.005169788953276,
+    "notional": 86.99744523390603,
+    "margin": 8.699744523390603,
+    "entry_time": "2026-04-25T15:15:39.198926",
+    "trade_number": 4
   },
   "last_trade_time": null,
   "last_1m_dir": "short",
@@ -17,6 +17,16 @@
   "skip_next_signal": false,
   "counter_trade_enabled": false,
   "trades": [
+    {
+      "time": "2026-04-25T15:15:38.892761",
+      "side": "short",
+      "entry_price": 86.5,
+      "exit_price": 86.55,
+      "size_base": 1.0117108414559646,
+      "pnl": -0.07685461407119946,
+      "duration": "6\u043c 31\u0441",
+      "close_reason": "sar_reversal"
+    },
     {
       "time": "2026-04-25T15:09:07.494107",
       "side": "long",
@@ -330,8 +340,8 @@
   "pair_mode": null,
   "active_symbol": "SOL/USDT:USDT",
   "sar_directions": {
-    "1m": "short",
-    "5m": "short",
+    "1m": "long",
+    "5m": "long",
     "15m": "short",
     "30m": "long"
   },
@@ -340,7 +350,7 @@
   "trailing_stop_price": null,
   "trailing_stop_order_id": null,
   "trailing_stop_set_at_roi": null,
-  "take_profit_price": 82.175,
+  "take_profit_price": 90.8775,
   "take_profit_contracts": null,
-  "telegram_trade_counter": 3
+  "telegram_trade_counter": 4
 }
