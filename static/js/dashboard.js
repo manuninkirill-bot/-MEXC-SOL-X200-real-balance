@@ -28,6 +28,8 @@ class TradingDashboard {
         document.getElementById('refresh-pairs-btn').addEventListener('click', () => this.loadFuturesPairs());
         document.getElementById('mode-gainer-btn').addEventListener('click', () => this.setPairMode('top_gainer'));
         document.getElementById('mode-loser-btn').addEventListener('click', () => this.setPairMode('top_loser'));
+        document.getElementById('manual-long-btn').addEventListener('click', () => this.manualOpenPosition('long'));
+        document.getElementById('manual-short-btn').addEventListener('click', () => this.manualOpenPosition('short'));
     }
 
     async setPairMode(mode) {
@@ -267,6 +269,21 @@ class TradingDashboard {
             this.showNotification(response.ok ? 'success' : 'error', data.message || data.error || '');
         } catch (error) {
             this.showNotification('error', 'Server connection error');
+        }
+    }
+
+    async manualOpenPosition(side) {
+        try {
+            const response = await fetch('/api/open_position', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ side })
+            });
+            const data = await response.json();
+            this.showNotification(response.ok ? 'success' : 'error', data.message || data.error || '');
+            if (response.ok) this.updateDashboard();
+        } catch (error) {
+            this.showNotification('error', 'Ошибка соединения');
         }
     }
 

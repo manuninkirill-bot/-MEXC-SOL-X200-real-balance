@@ -6,7 +6,7 @@
     <title>goldantelopesolx200 — MEXC Trading Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=15">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=16">
 </head>
 <body>
     <div class="container-fluid p-3">
@@ -247,8 +247,16 @@
                             </div>
                         </div>
                         <hr>
-                        <div class="text-center">
+                        <div class="text-center mb-2">
                             <div id="signal-status" class="badge bg-secondary signal-badge">NO SIGNAL</div>
+                        </div>
+                        <div class="d-flex gap-2 mt-2">
+                            <button id="manual-long-btn" class="btn btn-success btn-sm flex-fill fw-bold" title="Открыть LONG вручную">
+                                <i class="fas fa-arrow-up me-1"></i>LONG
+                            </button>
+                            <button id="manual-short-btn" class="btn btn-danger btn-sm flex-fill fw-bold" title="Открыть SHORT вручную">
+                                <i class="fas fa-arrow-down me-1"></i>SHORT
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -275,6 +283,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=15"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=16"></script>
 </body>
 </html>

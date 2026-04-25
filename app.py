@@ -394,6 +394,30 @@ def api_close_position():
         logging.error(f"Close position error: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/open_position', methods=['POST'])
+def api_open_position():
+    """Ручное открытие позиции (LONG или SHORT)"""
+    data = request.get_json() or {}
+    side = data.get('side', '').lower()
+    if side not in ('long', 'short'):
+        return jsonify({'error': 'Укажите side: long или short'}), 400
+    if state.get('in_position'):
+        return jsonify({'error': 'Позиция уже открыта'}), 400
+    try:
+        instance = bot_instance or sar_monitor_instance
+        if not instance:
+            return jsonify({'error': 'Бот не инициализирован'}), 500
+        price = instance.get_current_price()
+        size, _ = instance.compute_order_size_usdt(state.get('balance', 1000), price)
+        order_side = 'buy' if side == 'long' else 'sell'
+        instance.place_market_order(order_side, size)
+        instance.save_state_to_file()
+        logging.info(f"Ручное открытие: {side.upper()} по цене {price:.4f}")
+        return jsonify({'message': f'{side.upper()} открыт вручную по ${price:.4f}'})
+    except Exception as e:
+        logging.error(f"Open position error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/send_test_message', methods=['POST'])
 def api_send_test_message():
     """Отправка тестового сообщения в Telegram"""
