@@ -362,30 +362,27 @@ class TradingDashboard {
     updateSARDirections(directions) {
         if (!directions) return;
 
-        // Only show Position 1 (1m)
-        const element = document.getElementById('sar-1m');
-        const container = document.getElementById('sar-1m-container');
-        const direction = directions['1m'];
-
-        if (element && container) {
-            element.className = 'badge sar-badge';
-            if (direction === 'long') {
-                element.textContent = 'LONG';
-                element.classList.add('bg-success');
-                container.classList.remove('text-danger', 'text-muted');
-                container.classList.add('text-success');
-            } else if (direction === 'short') {
-                element.textContent = 'SHORT';
-                element.classList.add('bg-danger');
-                container.classList.remove('text-success', 'text-muted');
-                container.classList.add('text-danger');
+        const timeframes = ['1m', '3m', '5m', '15m', '30m'];
+        timeframes.forEach(tf => {
+            const el = document.getElementById(`sar-${tf}`);
+            const container = document.getElementById(`sar-${tf}-container`);
+            if (!el) return;
+            const dir = directions[tf];
+            el.className = 'badge sar-badge';
+            if (dir === 'long') {
+                el.textContent = 'L';
+                el.classList.add('bg-success');
+                if (container) { container.classList.remove('sar-short', 'sar-na'); container.classList.add('sar-long'); }
+            } else if (dir === 'short') {
+                el.textContent = 'S';
+                el.classList.add('bg-danger');
+                if (container) { container.classList.remove('sar-long', 'sar-na'); container.classList.add('sar-short'); }
             } else {
-                element.textContent = 'N/A';
-                element.classList.add('bg-secondary');
-                container.classList.remove('text-success', 'text-danger');
-                container.classList.add('text-muted');
+                el.textContent = '—';
+                el.classList.add('bg-secondary');
+                if (container) { container.classList.remove('sar-long', 'sar-short'); container.classList.add('sar-na'); }
             }
-        }
+        });
 
         // Signal based on 1m only
         const d1m = directions['1m'];
