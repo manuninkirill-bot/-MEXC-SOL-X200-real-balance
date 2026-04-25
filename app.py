@@ -632,6 +632,21 @@ def api_delete_last_trade():
         logging.error(f"Delete trade error: {e}")
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/api/clear_trades', methods=['POST'])
+def api_clear_trades():
+    """Clear all trade history"""
+    try:
+        count = len(state.get('trades', []))
+        state['trades'] = []
+        if bot_instance:
+            bot_instance.save_state_to_file()
+        logging.info(f"Cleared {count} trades from history")
+        return jsonify({'message': f'История очищена ({count} сделок удалено)'})
+    except Exception as e:
+        logging.error(f"Clear trades error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/set_leverage', methods=['POST'])
 def api_set_leverage():
     """Изменение кредитного плеча"""

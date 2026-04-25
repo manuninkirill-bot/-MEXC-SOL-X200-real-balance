@@ -6,7 +6,7 @@
     <title>goldantelopesolx200 — MEXC Trading Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=18">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=19">
 </head>
 <body>
     <div class="container-fluid p-3">
@@ -280,7 +280,12 @@
                 <div class="card bg-dark border-primary">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-history"></i> Trade History</h5>
-                        <small id="trade-count" class="text-muted"></small>
+                        <div class="d-flex align-items-center gap-2">
+                            <small id="trade-count" class="text-muted"></small>
+                            <button id="clear-history-btn" class="btn btn-outline-danger btn-xs" title="Очистить всю историю сделок">
+                                <i class="fas fa-trash-alt"></i> Очистить
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div id="trades-container" style="max-height: 600px; overflow-y: auto;">
@@ -296,6 +301,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=18"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=19"></script>
 </body>
 </html>

@@ -28,6 +28,7 @@ class TradingDashboard {
         });
 
         document.getElementById('refresh-pairs-btn').addEventListener('click', () => this.loadFuturesPairs());
+        document.getElementById('clear-history-btn').addEventListener('click', () => this.clearHistory());
         document.getElementById('mode-gainer-btn').addEventListener('click', () => this.setPairMode('top_gainer'));
         document.getElementById('mode-loser-btn').addEventListener('click', () => this.setPairMode('top_loser'));
         document.getElementById('manual-long-btn').addEventListener('click', () => this.manualOpenPosition('long'));
@@ -335,6 +336,18 @@ class TradingDashboard {
                 btn.textContent = 'вкл';
             }
         });
+    }
+
+    async clearHistory() {
+        if (!confirm('Очистить всю историю сделок? Это действие нельзя отменить.')) return;
+        try {
+            const response = await fetch('/api/clear_trades', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+            const data = await response.json();
+            this.showNotification(response.ok ? 'success' : 'error', data.message || data.error || '');
+            if (response.ok) this.updateDashboard();
+        } catch (error) {
+            this.showNotification('error', 'Ошибка соединения');
+        }
     }
 
     async deleteLastTrade() {
