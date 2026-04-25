@@ -259,7 +259,8 @@ class TradingBot:
                 "notional": notional,
                 "margin": margin,
                 "entry_time": entry_time.isoformat(),
-                "trade_number": state["telegram_trade_counter"]
+                "trade_number": state["telegram_trade_counter"],
+                "symbol": state.get("active_symbol", "SOL_USDT")
             }
             
             # --- Тейк-профит 30% ROI (paper mode) ---
@@ -282,11 +283,12 @@ class TradingBot:
             try:
                 open_type = 1 if ISOLATED else 2  # 1=isolated, 2=cross
                 order_params = {"openType": open_type}
+                trading_sym = self.get_trading_symbol()
                 # Логируем точный amount перед отправкой
-                logging.info(f"PLACING ORDER: side={side}, amount_base={amount_base:.6f} SOL, SYMBOL={SYMBOL}, params={order_params}")
+                logging.info(f"PLACING ORDER: side={side}, SYMBOL={trading_sym}, params={order_params}")
                 # Проверяем contractSize на бирже
                 try:
-                    mkt = self.exchange.market(SYMBOL)
+                    mkt = self.exchange.market(trading_sym)
                     cs = mkt.get('contractSize', 1)
                     min_amt = mkt.get('limits', {}).get('amount', {}).get('min', 1)
                     logging.info(f"Market contractSize={cs}, min_amount={min_amt}")
@@ -296,7 +298,7 @@ class TradingBot:
                 except Exception as me:
                     contracts = amount_base
                     logging.warning(f"Market info error: {me}")
-                order = self.exchange.create_market_buy_order(SYMBOL, contracts, params=order_params) if side == "buy" else self.exchange.create_market_sell_order(SYMBOL, contracts, params=order_params)
+                order = self.exchange.create_market_buy_order(trading_sym, contracts, params=order_params) if side == "buy" else self.exchange.create_market_sell_order(trading_sym, contracts, params=order_params)
                 price = self.get_price_from_order(order)
                 entry_time = self.now()
                 notional = amount_base * price
@@ -313,7 +315,8 @@ class TradingBot:
                     "size_base": amount_base,
                     "notional": notional,
                     "margin": margin,
-                    "entry_time": entry_time.isoformat()
+                    "entry_time": entry_time.isoformat(),
+                    "symbol": state.get("active_symbol", "SOL_USDT")
                 }
                 # --- Тейк-профит при 30% ROI ---
                 tp_delta = price * (self.TP_ROI / lev)
@@ -551,21 +554,38 @@ class TradingBot:
             logging.warning(f"place_stop_order failed (will use software stop): {e}")
             return None
 
+    def get_trading_symbol(self) -> str:
+        """Convert active_symbol from state to CCXT perpetual futures format."""
+        sym = state.get("active_symbol", SYMBOL)
+        if ':' in sym:          # already SOL/USDT:USDT
+            return sym
+        if '_' in sym:          # BLOCK_USDT → BLOCK/USDT:USDT
+            base = sym.split('_')[0]
+            return f"{base}/USDT:USDT"
+        if '/' in sym:          # SOL/USDT → SOL/USDT:USDT
+            base = sym.split('/')[0]
+            return f"{base}/USDT:USDT"
+        return SYMBOL
+
     def get_current_price(self):
         try:
             if USE_SIMULATOR:
                 return self.simulator.get_current_price()
+            # Build MEXC ticker symbol from active pair
+            active = state.get("active_symbol", SYMBOL)
+            mexc_sym = self.symbol_to_mexc(active)
             # 1) MEXC REST API
             try:
-                return fetch_price_mexc("SOLUSDT")
+                return fetch_price_mexc(mexc_sym)
             except Exception as e1:
-                logging.warning(f"MEXC REST price failed: {e1}")
+                logging.warning(f"MEXC REST price failed ({mexc_sym}): {e1}")
                 # 2) ccxt.mexc (резерв)
                 exc = self.public_exchange if self.public_exchange else self.exchange
+                ccxt_sym = self.get_trading_symbol()
                 try:
-                    ticker = exc.fetch_ticker(SYMBOL_SPOT)
+                    ticker = exc.fetch_ticker(ccxt_sym)
                 except Exception:
-                    ticker = exc.fetch_ticker("SOL/USDT:USDT")
+                    ticker = exc.fetch_ticker(SYMBOL_SPOT)
                 return float(ticker["last"])
         except Exception:
             return 150.0

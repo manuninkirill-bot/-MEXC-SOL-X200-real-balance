@@ -32,6 +32,7 @@ class TradingDashboard {
 
         document.getElementById('refresh-pairs-btn').addEventListener('click', () => this.loadFuturesPairs());
         document.getElementById('clear-history-btn').addEventListener('click', () => this.clearHistory());
+        document.getElementById('clear-position-btn').addEventListener('click', () => this.clearCurrentPosition());
         document.getElementById('mode-gainer-btn').addEventListener('click', () => this.setPairMode('top_gainer'));
         document.getElementById('mode-loser-btn').addEventListener('click', () => this.setPairMode('top_loser'));
         document.getElementById('manual-long-btn').addEventListener('click', () => this.manualOpenPosition('long'));
@@ -423,6 +424,18 @@ class TradingDashboard {
         }
     }
 
+    async clearCurrentPosition() {
+        if (!confirm('Принудительно очистить текущую позицию из состояния?')) return;
+        try {
+            const response = await fetch('/api/clear_position', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+            const data = await response.json();
+            this.showNotification(response.ok ? 'success' : 'error', data.message || data.error || '');
+            if (response.ok) this.updateDashboard();
+        } catch (error) {
+            this.showNotification('error', 'Ошибка соединения');
+        }
+    }
+
     async deleteLastTrade() {
         try {
             const response = await fetch('/api/delete_last_trade', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
@@ -575,6 +588,14 @@ class TradingDashboard {
     updatePosition(position, currentPrice) {
         document.getElementById('no-position').classList.add('d-none');
         document.getElementById('current-position').classList.remove('d-none');
+
+        // Show symbol badge in card header
+        const symBadge = document.getElementById('pos-symbol-badge');
+        if (symBadge) {
+            const sym = position.symbol || 'SOL_USDT';
+            symBadge.textContent = sym.replace('_', '/');
+            symBadge.style.display = '';
+        }
 
         const sideBadge = document.getElementById('pos-side');
         if (sideBadge) {

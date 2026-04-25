@@ -670,6 +670,24 @@ def api_clear_trades():
         logging.error(f"Clear trades error: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/clear_position', methods=['POST'])
+def api_clear_position():
+    """Принудительно сбросить текущую позицию из состояния"""
+    try:
+        state['in_position'] = False
+        state['position'] = None
+        state['real_position'] = None
+        state['take_profit_price'] = None
+        state['take_profit_contracts'] = None
+        state['skip_next_signal'] = False
+        if bot_instance:
+            bot_instance.save_state_to_file()
+        logging.info("Position manually cleared from state")
+        return jsonify({'message': 'Позиция очищена из состояния'})
+    except Exception as e:
+        logging.error(f"Clear position error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/set_leverage', methods=['POST'])
 def api_set_leverage():
     """Изменение кредитного плеча"""
