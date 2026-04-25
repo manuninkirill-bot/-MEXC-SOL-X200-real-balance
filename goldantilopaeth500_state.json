@@ -1,22 +1,42 @@
 {
-  "balance": 17.289318646581886,
-  "available": 8.631672854602975,
+  "balance": 17.14591731689178,
+  "available": 8.564056193442859,
   "in_position": true,
   "position": {
-    "side": "long",
-    "entry_price": 86.56,
-    "size_base": 1.0001901330844398,
-    "notional": 86.5764579197891,
-    "margin": 8.657645791978911,
-    "entry_time": "2026-04-25T15:17:44.640179",
-    "trade_number": 6
+    "side": "short",
+    "entry_price": 86.46,
+    "size_base": 0.9925816705353832,
+    "notional": 85.81861123448923,
+    "margin": 8.581861123448922,
+    "entry_time": "2026-04-25T15:45:53.578451",
+    "trade_number": 8
   },
   "last_trade_time": null,
-  "last_1m_dir": "long",
+  "last_1m_dir": "short",
   "one_min_flip_count": 0,
   "skip_next_signal": false,
   "counter_trade_enabled": false,
   "trades": [
+    {
+      "time": "2026-04-25T15:45:50.685976",
+      "side": "short",
+      "entry_price": 86.51,
+      "exit_price": 86.5,
+      "size_base": 0.9948763845453545,
+      "pnl": -0.015868278333493316,
+      "duration": "9\u0441",
+      "close_reason": "manual"
+    },
+    {
+      "time": "2026-04-25T15:45:41.009564",
+      "side": "long",
+      "entry_price": 86.56,
+      "exit_price": 86.51,
+      "size_base": 1.0001901330844398,
+      "pnl": -0.07596744117815962,
+      "duration": "27\u043c 56\u0441",
+      "close_reason": "sar_reversal"
+    },
     {
       "time": "2026-04-25T15:17:39.754533",
       "side": "long",
@@ -360,17 +380,17 @@
   "pair_mode": null,
   "active_symbol": "SOL/USDT:USDT",
   "sar_directions": {
-    "1m": "long",
-    "5m": "long",
-    "15m": "short",
+    "1m": "short",
+    "5m": "short",
+    "15m": "long",
     "30m": "long"
   },
-  "live_price": 86.56,
+  "live_price": 86.5,
   "real_position": null,
   "trailing_stop_price": null,
   "trailing_stop_order_id": null,
   "trailing_stop_set_at_roi": null,
-  "take_profit_price": 90.888,
+  "take_profit_price": 82.137,
   "take_profit_contracts": null,
-  "telegram_trade_counter": 6
+  "telegram_trade_counter": 8
 }
