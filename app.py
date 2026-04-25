@@ -309,7 +309,7 @@ def api_status():
     """Получение текущего статуса бота"""
     try:
         # SAR-направления обновляются SAR-монитором в реальном времени (каждые 15 сек)
-        directions = state.get('sar_directions', {tf: None for tf in ['1m', '3m', '5m', '15m', '30m']})
+        directions = state.get('sar_directions', {tf: None for tf in ['1m', '5m', '15m', '30m']})
         
         # Цена: приоритет — live_price от SAR-монитора, затем торговый бот
         current_price = (

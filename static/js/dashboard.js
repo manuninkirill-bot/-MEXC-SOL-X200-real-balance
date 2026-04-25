@@ -362,7 +362,7 @@ class TradingDashboard {
     updateSARDirections(directions) {
         if (!directions) return;
 
-        const timeframes = ['1m', '3m', '5m', '15m', '30m'];
+        const timeframes = ['1m', '5m', '15m', '30m'];
         timeframes.forEach(tf => {
             const el = document.getElementById(`sar-${tf}`);
             const container = document.getElementById(`sar-${tf}-container`);
@@ -370,17 +370,17 @@ class TradingDashboard {
             const dir = directions[tf];
             el.className = 'badge sar-badge';
             if (dir === 'long') {
-                el.textContent = 'L';
+                el.textContent = 'LONG';
                 el.classList.add('bg-success');
-                if (container) { container.classList.remove('sar-short', 'sar-na'); container.classList.add('sar-long'); }
+                if (container) { container.classList.remove('text-danger', 'text-muted'); container.classList.add('text-success'); }
             } else if (dir === 'short') {
-                el.textContent = 'S';
+                el.textContent = 'SHORT';
                 el.classList.add('bg-danger');
-                if (container) { container.classList.remove('sar-long', 'sar-na'); container.classList.add('sar-short'); }
+                if (container) { container.classList.remove('text-success', 'text-muted'); container.classList.add('text-danger'); }
             } else {
-                el.textContent = '—';
+                el.textContent = 'N/A';
                 el.classList.add('bg-secondary');
-                if (container) { container.classList.remove('sar-long', 'sar-short'); container.classList.add('sar-na'); }
+                if (container) { container.classList.remove('text-success', 'text-danger'); container.classList.add('text-muted'); }
             }
         });
 
