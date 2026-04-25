@@ -570,8 +570,31 @@ class TradingBot:
                     continue
 
                 active_tf = state.get("signal_timeframe", "1m")
-                d1 = dirs.get(active_tf) or dirs.get("1m")
-                logging.info(f"[{self.now()}] SAR: {', '.join(f'{tf}={dirs[tf]}' for tf in dirs)} | signal_tf={active_tf}")
+
+                COMBO_MAP = {
+                    "1m":     ["1m"],
+                    "5m":     ["5m"],
+                    "15m":    ["15m"],
+                    "30m":    ["30m"],
+                    "1+5":    ["1m", "5m"],
+                    "1+15":   ["1m", "15m"],
+                    "5+15":   ["5m", "15m"],
+                    "1+5+15": ["1m", "5m", "15m"],
+                    "ALL":    ["1m", "5m", "15m", "30m"],
+                }
+
+                def get_combo_dir(combo_key):
+                    tfs = COMBO_MAP.get(combo_key, ["1m"])
+                    vals = [dirs.get(tf) for tf in tfs]
+                    if vals and all(v == vals[0] and v is not None for v in vals):
+                        return vals[0]
+                    return None
+
+                open_combo  = state.get("open_strategy",  "1m")
+                close_combo = state.get("close_strategy", "1m")
+                d1 = get_combo_dir(open_combo)   # direction for opening
+                dc = get_combo_dir(close_combo)  # direction for closing
+                logging.info(f"[{self.now()}] SAR: {', '.join(f'{tf}={dirs[tf]}' for tf in dirs)} | signal_tf={active_tf} | open={open_combo}({d1}) | close={close_combo}({dc})")
 
                 counter = state.get("counter_trade_enabled", True)
                 pair_mode = state.get("pair_mode")  # 'top_gainer' | 'top_loser' | None
@@ -594,16 +617,16 @@ class TradingBot:
                 if state["in_position"]:
                     pos_side = state["position"]["side"]
                     if counter:
-                        # Контр-трейд: закрываем когда SAR совпадает с нашей позицией
-                        close_cond = (d1 == pos_side)
+                        # Контр-трейд: закрываем когда сигнал закрытия совпадает с нашей позицией
+                        close_cond = dc is not None and (dc == pos_side)
                     else:
-                        # Обычный трейд: закрываем когда SAR разворачивается против позиции
-                        close_cond = (d1 != pos_side)
+                        # Обычный трейд: закрываем когда сигнал закрытия разворачивается против позиции
+                        close_cond = dc is not None and (dc != pos_side)
                     if close_cond:
-                        logging.info(f"SAR flip → закрываем {pos_side}, флип по d1={d1}")
+                        logging.info(f"SAR flip → закрываем {pos_side}, close_combo={close_combo}({dc})")
                         self.close_position(close_reason="sar_reversal")
                         # Флип только если разрешён по выбранной вкладке
-                        if allowed_to_open(d1):
+                        if d1 and allowed_to_open(d1):
                             price = self.get_current_price()
                             size, _ = self.compute_order_size_usdt(state["balance"], price)
                             self.place_market_order(calc_order_side(d1), size)
@@ -617,7 +640,7 @@ class TradingBot:
                         state["skip_next_signal"] = False
                     state["last_1m_dir"] = d1
 
-                    # Открываем только если направление разрешено по вкладке
+                    # Открываем только если все TF из open_combo согласны и направление разрешено
                     if d1 and not state["skip_next_signal"] and allowed_to_open(d1):
                         price = self.get_current_price()
                         size, _ = self.compute_order_size_usdt(state["balance"], price)

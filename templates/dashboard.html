@@ -6,7 +6,7 @@
     <title>goldantelopesolx200 — MEXC Trading Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=19">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=20">
 </head>
 <body>
     <div class="container-fluid p-3">
@@ -259,6 +259,32 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Open strategy combos -->
+                        <div class="d-flex align-items-center gap-1 mb-1 flex-wrap">
+                            <span style="font-size:0.72em;color:#94a3b8;white-space:nowrap;min-width:38px;">Откр:</span>
+                            <button class="btn btn-xs open-strategy-btn btn-outline-success" data-combo="1m">1m</button>
+                            <button class="btn btn-xs open-strategy-btn btn-outline-success" data-combo="5m">5m</button>
+                            <button class="btn btn-xs open-strategy-btn btn-outline-success" data-combo="15m">15m</button>
+                            <button class="btn btn-xs open-strategy-btn btn-outline-success" data-combo="30m">30m</button>
+                            <button class="btn btn-xs open-strategy-btn btn-outline-success" data-combo="1+5">1+5</button>
+                            <button class="btn btn-xs open-strategy-btn btn-outline-success" data-combo="1+15">1+15</button>
+                            <button class="btn btn-xs open-strategy-btn btn-outline-success" data-combo="5+15">5+15</button>
+                            <button class="btn btn-xs open-strategy-btn btn-outline-success" data-combo="1+5+15">1+5+15</button>
+                            <button class="btn btn-xs open-strategy-btn btn-outline-success" data-combo="ALL">ALL</button>
+                        </div>
+                        <!-- Close strategy combos -->
+                        <div class="d-flex align-items-center gap-1 mb-2 flex-wrap">
+                            <span style="font-size:0.72em;color:#94a3b8;white-space:nowrap;min-width:38px;">Закр:</span>
+                            <button class="btn btn-xs close-strategy-btn btn-outline-danger" data-combo="1m">1m</button>
+                            <button class="btn btn-xs close-strategy-btn btn-outline-danger" data-combo="5m">5m</button>
+                            <button class="btn btn-xs close-strategy-btn btn-outline-danger" data-combo="15m">15m</button>
+                            <button class="btn btn-xs close-strategy-btn btn-outline-danger" data-combo="30m">30m</button>
+                            <button class="btn btn-xs close-strategy-btn btn-outline-danger" data-combo="1+5">1+5</button>
+                            <button class="btn btn-xs close-strategy-btn btn-outline-danger" data-combo="1+15">1+15</button>
+                            <button class="btn btn-xs close-strategy-btn btn-outline-danger" data-combo="5+15">5+15</button>
+                            <button class="btn btn-xs close-strategy-btn btn-outline-danger" data-combo="1+5+15">1+5+15</button>
+                            <button class="btn btn-xs close-strategy-btn btn-outline-danger" data-combo="ALL">ALL</button>
+                        </div>
                         <hr>
                         <div class="text-center mb-2">
                             <div id="signal-status" class="badge bg-secondary signal-badge">NO SIGNAL</div>
@@ -301,6 +327,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=19"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=20"></script>
 </body>
 </html>

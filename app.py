@@ -335,6 +335,8 @@ def api_status():
             'pair_mode': state.get('pair_mode', None),
             'active_symbol': state.get('active_symbol', 'SOL/USDT:USDT'),
             'signal_timeframe': state.get('signal_timeframe', '1m'),
+            'open_strategy': state.get('open_strategy', '1m'),
+            'close_strategy': state.get('close_strategy', '1m'),
         })
     except Exception as e:
         logging.error(f"Status error: {e}")
@@ -403,6 +405,26 @@ def api_set_signal_timeframe():
         return jsonify({'error': 'Неверный таймфрейм'}), 400
     state['signal_timeframe'] = tf
     return jsonify({'signal_timeframe': tf, 'message': f'Сигнальный таймфрейм: {tf}'})
+
+VALID_COMBOS = ('1m', '5m', '15m', '30m', '1+5', '1+15', '5+15', '1+5+15', 'ALL')
+
+@app.route('/api/set_open_strategy', methods=['POST'])
+def api_set_open_strategy():
+    data = request.get_json() or {}
+    combo = data.get('combo', '1m')
+    if combo not in VALID_COMBOS:
+        return jsonify({'error': 'Неверная комбинация'}), 400
+    state['open_strategy'] = combo
+    return jsonify({'open_strategy': combo, 'message': f'Стратегия открытия: {combo}'})
+
+@app.route('/api/set_close_strategy', methods=['POST'])
+def api_set_close_strategy():
+    data = request.get_json() or {}
+    combo = data.get('combo', '1m')
+    if combo not in VALID_COMBOS:
+        return jsonify({'error': 'Неверная комбинация'}), 400
+    state['close_strategy'] = combo
+    return jsonify({'close_strategy': combo, 'message': f'Стратегия закрытия: {combo}'})
 
 @app.route('/api/open_position', methods=['POST'])
 def api_open_position():

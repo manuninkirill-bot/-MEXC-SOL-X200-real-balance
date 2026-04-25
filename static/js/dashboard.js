@@ -7,10 +7,13 @@ class TradingDashboard {
         this.pairMode = null; // 'top_gainer' | 'top_loser' | null
         this.activePairSymbol = null;
         this.signalTimeframe = '1m';
+        this.openStrategy = '1m';
+        this.closeStrategy = '1m';
         this.bindEvents();
         this.startDataUpdates();
         this.updateDashboard();
         this.updateSignalTimeframeButtons();
+        this.updateStrategyButtons();
         this.loadFuturesPairs();
         setInterval(() => this.loadFuturesPairs(), 60000);
     }
@@ -35,6 +38,12 @@ class TradingDashboard {
         document.getElementById('manual-short-btn').addEventListener('click', () => this.manualOpenPosition('short'));
         document.querySelectorAll('.tf-select-btn').forEach(btn => {
             btn.addEventListener('click', () => this.setSignalTimeframe(btn.dataset.tf));
+        });
+        document.querySelectorAll('.open-strategy-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.setOpenStrategy(btn.dataset.combo));
+        });
+        document.querySelectorAll('.close-strategy-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.setCloseStrategy(btn.dataset.combo));
         });
     }
 
@@ -338,6 +347,63 @@ class TradingDashboard {
         });
     }
 
+    async setOpenStrategy(combo) {
+        try {
+            const res = await fetch('/api/set_open_strategy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ combo })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                this.openStrategy = combo;
+                this.updateStrategyButtons();
+                this.showNotification('success', data.message || `Стратегия открытия: ${combo}`);
+            }
+        } catch (e) {
+            this.showNotification('error', 'Ошибка соединения');
+        }
+    }
+
+    async setCloseStrategy(combo) {
+        try {
+            const res = await fetch('/api/set_close_strategy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ combo })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                this.closeStrategy = combo;
+                this.updateStrategyButtons();
+                this.showNotification('success', data.message || `Стратегия закрытия: ${combo}`);
+            }
+        } catch (e) {
+            this.showNotification('error', 'Ошибка соединения');
+        }
+    }
+
+    updateStrategyButtons() {
+        document.querySelectorAll('.open-strategy-btn').forEach(btn => {
+            if (btn.dataset.combo === this.openStrategy) {
+                btn.classList.remove('btn-outline-success');
+                btn.classList.add('btn-success');
+            } else {
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-success');
+            }
+        });
+        document.querySelectorAll('.close-strategy-btn').forEach(btn => {
+            if (btn.dataset.combo === this.closeStrategy) {
+                btn.classList.remove('btn-outline-danger');
+                btn.classList.add('btn-danger');
+            } else {
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-outline-danger');
+            }
+        });
+    }
+
     async clearHistory() {
         if (!confirm('Очистить всю историю сделок? Это действие нельзя отменить.')) return;
         try {
@@ -436,6 +502,18 @@ class TradingDashboard {
                 this.signalTimeframe = data.signal_timeframe;
                 this.updateSignalTimeframeButtons();
             }
+
+            // Strategy sync from server
+            let strategyChanged = false;
+            if (data.open_strategy && data.open_strategy !== this.openStrategy) {
+                this.openStrategy = data.open_strategy;
+                strategyChanged = true;
+            }
+            if (data.close_strategy && data.close_strategy !== this.closeStrategy) {
+                this.closeStrategy = data.close_strategy;
+                strategyChanged = true;
+            }
+            if (strategyChanged) this.updateStrategyButtons();
 
             this.lastUpdateTime = new Date();
         } catch (error) {
