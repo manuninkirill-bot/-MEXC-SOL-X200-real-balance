@@ -159,7 +159,16 @@ class TradingBot:
     def now(self):
         return datetime.utcnow()
 
-    def fetch_ohlcv_tf(self, tf: str, limit=200):
+    @staticmethod
+    def symbol_to_mexc(symbol: str) -> str:
+        """Convert any symbol format to MEXC API format: SOL/USDT:USDT or SOL_USDT → SOLUSDT"""
+        s = symbol.split(':')[0]   # remove :USDT suffix
+        s = s.replace('/', '').replace('_', '').replace('-', '')
+        return s.upper()
+
+    def fetch_ohlcv_tf(self, tf: str, limit=200, symbol: str = None):
+        mexc_sym = self.symbol_to_mexc(symbol) if symbol else "SOLUSDT"
+        ccxt_sym = symbol.split(':')[0] if symbol else SYMBOL_SPOT
         try:
             if USE_SIMULATOR and self.simulator:
                 ohlcv = self.simulator.fetch_ohlcv(tf, limit=limit)
@@ -167,15 +176,15 @@ class TradingBot:
                 ohlcv = None
                 # 1) MEXC REST API напрямую
                 try:
-                    ohlcv = fetch_ohlcv_mexc("SOLUSDT", interval=tf, limit=limit)
-                    logging.debug(f"MEXC OHLCV {tf}: {len(ohlcv)} candles")
+                    ohlcv = fetch_ohlcv_mexc(mexc_sym, interval=tf, limit=limit)
+                    logging.debug(f"MEXC OHLCV {tf} ({mexc_sym}): {len(ohlcv)} candles")
                 except Exception as e1:
                     logging.warning(f"MEXC REST OHLCV {tf} failed: {e1}")
                     # 2) ccxt.mexc (резерв)
                     try:
                         exc = self.public_exchange if self.public_exchange else self.exchange
-                        ohlcv = exc.fetch_ohlcv(SYMBOL_SPOT, timeframe=tf, limit=limit)
-                        logging.info(f"ccxt MEXC OHLCV {tf}: {len(ohlcv)} candles")
+                        ohlcv = exc.fetch_ohlcv(ccxt_sym, timeframe=tf, limit=limit)
+                        logging.info(f"ccxt MEXC OHLCV {tf} ({ccxt_sym}): {len(ohlcv)} candles")
                     except Exception as e2:
                         logging.error(f"MEXC OHLCV {tf} failed (REST + ccxt): {e2}")
 
@@ -211,9 +220,10 @@ class TradingBot:
         return "long" if last_close > last_psar else "short"
 
     def get_current_directions(self):
+        active_sym = state.get("active_symbol") or None
         directions = {}
         for tf in TIMEFRAMES.keys():
-            df = self.fetch_ohlcv_tf(tf)
+            df = self.fetch_ohlcv_tf(tf, symbol=active_sym)
             directions[tf] = self.get_direction_from_psar(df) if df is not None else None
         return directions
 

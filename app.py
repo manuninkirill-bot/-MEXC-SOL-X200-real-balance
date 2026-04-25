@@ -337,6 +337,7 @@ def api_status():
             'signal_timeframe': state.get('signal_timeframe', '1m'),
             'open_strategy': state.get('open_strategy', '1m'),
             'close_strategy': state.get('close_strategy', '1m'),
+            'analyzed_symbol': state.get('active_symbol', 'SOL/USDT:USDT').split(':')[0],
         })
     except Exception as e:
         logging.error(f"Status error: {e}")

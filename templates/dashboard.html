@@ -6,7 +6,7 @@
     <title>goldantelopesolx200 — MEXC Trading Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=20">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=21">
 </head>
 <body>
     <div class="container-fluid p-3">
@@ -220,9 +220,13 @@
                 <div class="card bg-dark border-primary">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-signal"></i> Trade Entry Signal</h5>
-                        <span id="signal-pair-label" class="badge bg-secondary" style="font-size:0.8em;">—</span>
+                        <span id="signal-pair-label" class="badge bg-primary" style="font-size:0.85em;">SOL/USDT</span>
                     </div>
                     <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-2 px-1" style="background:rgba(59,130,246,0.08);border-radius:7px;padding:6px 10px;">
+                            <span style="font-size:0.75em;color:#94a3b8;"><i class="fas fa-search me-1"></i>Анализирую:</span>
+                            <span id="analyzed-pair-display" class="fw-bold" style="font-size:0.95em;color:#fff;letter-spacing:0.5px;">SOL/USDT</span>
+                        </div>
                         <div class="sar-indicator mb-2" id="sar-1m-container">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="fw-bold"><i class="fas fa-layer-group me-2"></i>1m:</span>
@@ -327,6 +331,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=20"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=21"></script>
 </body>
 </html>

@@ -93,9 +93,12 @@ class TradingDashboard {
         }
     }
 
-    updateActivePairBadge() {
+    updateActivePairBadge(analyzedSymbol) {
         const badge = document.getElementById('active-pair-badge');
         const signalLabel = document.getElementById('signal-pair-label');
+        const analyzedDisplay = document.getElementById('analyzed-pair-display');
+
+        // Top-level pair badge (pairs list header)
         if (badge) {
             if (this.pairMode && this.activePairSymbol) {
                 const icon = this.pairMode === 'top_gainer' ? '▲' : '▼';
@@ -106,15 +109,21 @@ class TradingDashboard {
                 badge.className = 'badge bg-secondary';
             }
         }
+
+        // Signal card header badge — always show the pair
+        const displaySym = analyzedSymbol || (this.activePairSymbol ? this.activePairSymbol.split(':')[0] : 'SOL/USDT');
+        const cleanSym = displaySym.split(':')[0];
         if (signalLabel) {
-            if (this.activePairSymbol) {
-                const icon = this.pairMode === 'top_gainer' ? '▲ ' : this.pairMode === 'top_loser' ? '▼ ' : '';
-                signalLabel.textContent = `${icon}${this.activePairSymbol}`;
-                signalLabel.className = `badge ${this.pairMode === 'top_gainer' ? 'bg-success' : this.pairMode === 'top_loser' ? 'bg-danger' : 'bg-primary'}`;
-            } else {
-                signalLabel.textContent = '—';
-                signalLabel.className = 'badge bg-secondary';
-            }
+            const icon = this.pairMode === 'top_gainer' ? '▲ ' : this.pairMode === 'top_loser' ? '▼ ' : '';
+            signalLabel.textContent = `${icon}${cleanSym}`;
+            signalLabel.className = `badge ${this.pairMode === 'top_gainer' ? 'bg-success' : this.pairMode === 'top_loser' ? 'bg-danger' : 'bg-primary'}`;
+        }
+
+        // Inline "Анализирую" display inside card body
+        if (analyzedDisplay) {
+            const icon = this.pairMode === 'top_gainer' ? '▲ ' : this.pairMode === 'top_loser' ? '▼ ' : '';
+            analyzedDisplay.textContent = `${icon}${cleanSym}`;
+            analyzedDisplay.style.color = this.pairMode === 'top_gainer' ? '#10b981' : this.pairMode === 'top_loser' ? '#ef4444' : '#ffffff';
         }
     }
 
@@ -135,6 +144,7 @@ class TradingDashboard {
         } catch (e) {
             console.error('Futures pairs load error:', e);
         }
+        this.updateActivePairBadge();
     }
 
     toggleZeroFee() {
@@ -494,8 +504,8 @@ class TradingDashboard {
                 this.pairMode = data.pair_mode;
                 this.activePairSymbol = data.active_symbol || null;
                 this.updatePairModeButtons();
-                this.updateActivePairBadge();
             }
+            this.updateActivePairBadge(data.analyzed_symbol || null);
 
             // Signal timeframe sync from server
             if (data.signal_timeframe && data.signal_timeframe !== this.signalTimeframe) {
