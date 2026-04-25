@@ -569,8 +569,9 @@ class TradingBot:
                     time.sleep(5)
                     continue
 
-                d1 = dirs["1m"]
-                logging.info(f"[{self.now()}] SAR: {', '.join(f'{tf}={dirs[tf]}' for tf in dirs)}")
+                active_tf = state.get("signal_timeframe", "1m")
+                d1 = dirs.get(active_tf) or dirs.get("1m")
+                logging.info(f"[{self.now()}] SAR: {', '.join(f'{tf}={dirs[tf]}' for tf in dirs)} | signal_tf={active_tf}")
 
                 counter = state.get("counter_trade_enabled", True)
                 pair_mode = state.get("pair_mode")  # 'top_gainer' | 'top_loser' | None

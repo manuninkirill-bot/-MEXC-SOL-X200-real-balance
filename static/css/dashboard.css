@@ -296,6 +296,14 @@ h1, h2, h3, h4, h5, h6, p, td, th, strong { color: #ffffff !important; }
     transform: translateY(-1px);
 }
 
+/* Extra-small buttons (Bootstrap doesn't include btn-xs by default) */
+.btn-xs {
+    padding: 0.15rem 0.45rem;
+    font-size: 0.72em;
+    line-height: 1.4;
+    border-radius: 5px;
+}
+
 /* Leverage buttons active state */
 .leverage-btn.active {
     background: linear-gradient(45deg, #f59e0b, #d97706) !important;

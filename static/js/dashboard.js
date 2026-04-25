@@ -6,9 +6,11 @@ class TradingDashboard {
         this.zeroFeeOnly = false;
         this.pairMode = null; // 'top_gainer' | 'top_loser' | null
         this.activePairSymbol = null;
+        this.signalTimeframe = '1m';
         this.bindEvents();
         this.startDataUpdates();
         this.updateDashboard();
+        this.updateSignalTimeframeButtons();
         this.loadFuturesPairs();
         setInterval(() => this.loadFuturesPairs(), 60000);
     }
@@ -30,6 +32,9 @@ class TradingDashboard {
         document.getElementById('mode-loser-btn').addEventListener('click', () => this.setPairMode('top_loser'));
         document.getElementById('manual-long-btn').addEventListener('click', () => this.manualOpenPosition('long'));
         document.getElementById('manual-short-btn').addEventListener('click', () => this.manualOpenPosition('short'));
+        document.querySelectorAll('.tf-select-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.setSignalTimeframe(btn.dataset.tf));
+        });
     }
 
     async setPairMode(mode) {
@@ -300,6 +305,38 @@ class TradingDashboard {
         }
     }
 
+    async setSignalTimeframe(tf) {
+        try {
+            const res = await fetch('/api/set_signal_timeframe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ timeframe: tf })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                this.signalTimeframe = tf;
+                this.updateSignalTimeframeButtons();
+                this.showNotification('success', data.message || `Сигнал: ${tf}`);
+            }
+        } catch (e) {
+            this.showNotification('error', 'Ошибка соединения');
+        }
+    }
+
+    updateSignalTimeframeButtons() {
+        document.querySelectorAll('.tf-select-btn').forEach(btn => {
+            if (btn.dataset.tf === this.signalTimeframe) {
+                btn.classList.remove('btn-outline-warning');
+                btn.classList.add('btn-warning');
+                btn.textContent = '✓ вкл';
+            } else {
+                btn.classList.remove('btn-warning');
+                btn.classList.add('btn-outline-warning');
+                btn.textContent = 'вкл';
+            }
+        });
+    }
+
     async deleteLastTrade() {
         try {
             const response = await fetch('/api/delete_last_trade', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
@@ -379,6 +416,12 @@ class TradingDashboard {
                 this.activePairSymbol = data.active_symbol || null;
                 this.updatePairModeButtons();
                 this.updateActivePairBadge();
+            }
+
+            // Signal timeframe sync from server
+            if (data.signal_timeframe && data.signal_timeframe !== this.signalTimeframe) {
+                this.signalTimeframe = data.signal_timeframe;
+                this.updateSignalTimeframeButtons();
             }
 
             this.lastUpdateTime = new Date();

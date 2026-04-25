@@ -334,6 +334,7 @@ def api_status():
             'counter_trade_enabled': state.get('counter_trade_enabled', True),
             'pair_mode': state.get('pair_mode', None),
             'active_symbol': state.get('active_symbol', 'SOL/USDT:USDT'),
+            'signal_timeframe': state.get('signal_timeframe', '1m'),
         })
     except Exception as e:
         logging.error(f"Status error: {e}")
@@ -393,6 +394,15 @@ def api_close_position():
     except Exception as e:
         logging.error(f"Close position error: {e}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/set_signal_timeframe', methods=['POST'])
+def api_set_signal_timeframe():
+    data = request.get_json() or {}
+    tf = data.get('timeframe', '1m')
+    if tf not in ('1m', '5m', '15m', '30m'):
+        return jsonify({'error': 'Неверный таймфрейм'}), 400
+    state['signal_timeframe'] = tf
+    return jsonify({'signal_timeframe': tf, 'message': f'Сигнальный таймфрейм: {tf}'})
 
 @app.route('/api/open_position', methods=['POST'])
 def api_open_position():
