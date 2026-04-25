@@ -1,15 +1,15 @@
 {
-  "balance": 17.65339989137138,
-  "available": 8.81344000585742,
+  "balance": 17.476343660852407,
+  "available": 8.725044882258311,
   "in_position": true,
   "position": {
     "side": "short",
-    "entry_price": 86.43,
-    "size_base": 1.0227883704169802,
-    "notional": 88.39959885513962,
-    "margin": 8.839959885513961,
-    "entry_time": "2026-04-25T15:01:03.890673",
-    "trade_number": 1
+    "entry_price": 86.5,
+    "size_base": 1.0117108414559646,
+    "notional": 87.51298778594094,
+    "margin": 8.751298778594094,
+    "entry_time": "2026-04-25T15:09:07.577677",
+    "trade_number": 3
   },
   "last_trade_time": null,
   "last_1m_dir": "short",
@@ -17,6 +17,26 @@
   "skip_next_signal": false,
   "counter_trade_enabled": false,
   "trades": [
+    {
+      "time": "2026-04-25T15:09:07.494107",
+      "side": "long",
+      "entry_price": 86.5,
+      "exit_price": 86.5,
+      "size_base": 1.0147551067762937,
+      "pnl": -0.026332895020844817,
+      "duration": "12\u0441",
+      "close_reason": "sar_reversal"
+    },
+    {
+      "time": "2026-04-25T15:08:54.924201",
+      "side": "short",
+      "entry_price": 86.43,
+      "exit_price": 86.5,
+      "size_base": 1.0227883704169802,
+      "pnl": -0.09813654414150227,
+      "duration": "7\u043c 51\u0441",
+      "close_reason": "sar_reversal"
+    },
     {
       "time": "2026-04-20T14:40:32.007199",
       "side": "long",
@@ -312,14 +332,15 @@
   "sar_directions": {
     "1m": "short",
     "5m": "short",
-    "15m": "short"
+    "15m": "short",
+    "30m": "long"
   },
-  "live_price": 85.2,
+  "live_price": 86.5,
   "real_position": null,
   "trailing_stop_price": null,
   "trailing_stop_order_id": null,
   "trailing_stop_set_at_roi": null,
-  "take_profit_price": 82.1085,
+  "take_profit_price": 82.175,
   "take_profit_contracts": null,
-  "telegram_trade_counter": 1
+  "telegram_trade_counter": 3
 }

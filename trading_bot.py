@@ -569,10 +569,11 @@ class TradingBot:
                     time.sleep(5)
                     continue
 
-                d1, d5, d15 = dirs["1m"], dirs["5m"], dirs["15m"]
-                logging.info(f"[{self.now()}] SAR: 1m={d1}, 5m={d5}, 15m={d15}")
+                d1 = dirs["1m"]
+                logging.info(f"[{self.now()}] SAR: {', '.join(f'{tf}={dirs[tf]}' for tf in dirs)}")
 
                 counter = state.get("counter_trade_enabled", True)
+                pair_mode = state.get("pair_mode")  # 'top_gainer' | 'top_loser' | None
 
                 def calc_order_side(sar_dir):
                     """Сторона ордера с учётом режима контр/обычный"""
@@ -580,6 +581,14 @@ class TradingBot:
                         return "sell" if sar_dir == "long" else "buy"
                     else:
                         return "buy" if sar_dir == "long" else "sell"
+
+                def allowed_to_open(sar_dir):
+                    """Разрешено ли открывать позицию в данном направлении по вкладке пары"""
+                    if pair_mode == 'top_gainer':
+                        return sar_dir == 'long'   # Выросла → только LONG
+                    elif pair_mode == 'top_loser':
+                        return sar_dir == 'short'  # Упала → только SHORT
+                    return True  # вкладка не выбрана — любое направление
 
                 if state["in_position"]:
                     pos_side = state["position"]["side"]
@@ -592,10 +601,13 @@ class TradingBot:
                     if close_cond:
                         logging.info(f"SAR flip → закрываем {pos_side}, флип по d1={d1}")
                         self.close_position(close_reason="sar_reversal")
-                        # Немедленный флип: открываем в новом направлении (без skip)
-                        price = self.get_current_price()
-                        size, _ = self.compute_order_size_usdt(state["balance"], price)
-                        self.place_market_order(calc_order_side(d1), size)
+                        # Флип только если разрешён по выбранной вкладке
+                        if allowed_to_open(d1):
+                            price = self.get_current_price()
+                            size, _ = self.compute_order_size_usdt(state["balance"], price)
+                            self.place_market_order(calc_order_side(d1), size)
+                        else:
+                            logging.info(f"Флип заблокирован: pair_mode={pair_mode}, d1={d1}")
                         self.save_state_to_file()
                 else:
                     # Позиции нет: обновляем last_1m_dir
@@ -604,12 +616,14 @@ class TradingBot:
                         state["skip_next_signal"] = False
                     state["last_1m_dir"] = d1
 
-                    # Открываем по 1m SAR (без требования 15m)
-                    if d1 and not state["skip_next_signal"]:
+                    # Открываем только если направление разрешено по вкладке
+                    if d1 and not state["skip_next_signal"] and allowed_to_open(d1):
                         price = self.get_current_price()
                         size, _ = self.compute_order_size_usdt(state["balance"], price)
                         self.place_market_order(calc_order_side(d1), size)
                         self.save_state_to_file()
+                    elif d1 and not allowed_to_open(d1):
+                        logging.info(f"Вход заблокирован: pair_mode={pair_mode}, d1={d1}")
                 
                 time.sleep(5)
             except Exception as e:
