@@ -39,9 +39,9 @@ USE_SIMULATOR = os.getenv("USE_SIMULATOR", "0") == "1"
 
 SYMBOL        = "SOL/USDT:USDT"  # MEXC linear perpetual futures
 SYMBOL_SPOT   = "SOL/USDT"       # для публичного OHLCV (не требует ключей)
-LEVERAGE = 200  # плечо x200 (может быть изменено через API)
+LEVERAGE = 10  # плечо x10 (может быть изменено через API)
 ISOLATED = False  # кросс-маржа
-POSITION_PERCENT = 0.10  # 10% от доступного баланса
+POSITION_PERCENT = 0.50  # 50% от доступного баланса (кросс-маржа)
 TIMEFRAMES = {"1m": 1, "5m": 5, "15m": 15}  # Установлены 3 таймфрейма: 1м, 5м, 15м
 MIN_TRADE_SECONDS = 120  # минимальная длительность сделки 2 минуты
 MIN_RANDOM_TRADE_SECONDS = 480  # минимальная случайная длительность сделки 8 минут
@@ -49,7 +49,7 @@ MAX_RANDOM_TRADE_SECONDS = 780  # максимальная случайная д
 PAUSE_BETWEEN_TRADES = 0  # пауза между сделками убрана
 START_BANK = 100.0  # стартовый банк (для бумажной торговли / учета)
 DASHBOARD_MAX = 100
-ALLOWED_LEVERAGES = [100, 200, 300, 400, 500]
+ALLOWED_LEVERAGES = [3, 5, 10, 20]
 
 # ========== Глобальные переменные состояния ==========
 state = {

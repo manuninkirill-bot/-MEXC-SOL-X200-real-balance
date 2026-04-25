@@ -126,7 +126,10 @@ class TradingDashboard {
         const countEl = document.getElementById('pairs-count');
         if (!tbody) return;
 
-        const pairs = this.getFilteredPairs();
+        const filtered = this.getFilteredPairs();
+        const pairs = this.pairMode === 'top_loser'
+            ? [...filtered].sort((a, b) => a.change_pct - b.change_pct)
+            : filtered;
 
         if (countEl) {
             countEl.textContent = `(${pairs.length}${this.zeroFeeOnly ? ' · 0% fee' : ''})`;
@@ -138,7 +141,7 @@ class TradingDashboard {
         }
 
         const gainerSym = this.pairMode === 'top_gainer' ? (pairs[0] ? pairs[0].symbol : null) : null;
-        const loserSym = this.pairMode === 'top_loser' ? (pairs[pairs.length - 1] ? pairs[pairs.length - 1].symbol : null) : null;
+        const loserSym = this.pairMode === 'top_loser' ? (pairs[0] ? pairs[0].symbol : null) : null;
 
         tbody.innerHTML = pairs.map((p, i) => {
             const pct = p.change_pct;
