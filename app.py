@@ -218,6 +218,67 @@ def fetch_mexc_payouts():
         logging.error(f"Error fetching MEXC payouts: {e}")
         return {'BTC': {'up': '80%', 'down': '80%'}, 'ETH': {'up': '80%', 'down': '80%'}}
 
+@app.route('/api/futures_pairs')
+def api_futures_pairs():
+    """Получение всех фьючерсных пар MEXC, отсортированных по изменению цены (убывание)"""
+    import urllib.request as _ureq
+    import json as _json
+    try:
+        # Fetch all futures tickers from MEXC contract API
+        req = _ureq.Request(
+            "https://contract.mexc.com/api/v1/contract/ticker",
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
+        with _ureq.urlopen(req, timeout=10) as r:
+            ticker_data = _json.loads(r.read())
+
+        # Fetch contract details (includes fees)
+        req2 = _ureq.Request(
+            "https://contract.mexc.com/api/v1/contract/detail",
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
+        with _ureq.urlopen(req2, timeout=10) as r2:
+            detail_data = _json.loads(r2.read())
+
+        # Build a map of symbol -> fee info
+        fee_map = {}
+        if detail_data.get('success') and detail_data.get('data'):
+            for contract in detail_data['data']:
+                sym = contract.get('symbol', '')
+                maker_raw = contract.get('makerFee')
+                taker_raw = contract.get('takerFee')
+                maker = float(maker_raw) if maker_raw is not None else None
+                taker = float(taker_raw) if taker_raw is not None else None
+                zero_fee = (maker is not None and taker is not None and maker == 0 and taker == 0)
+                fee_map[sym] = {'maker': maker, 'taker': taker, 'zero_fee': zero_fee}
+
+        pairs = []
+        if ticker_data.get('success') and ticker_data.get('data'):
+            for item in ticker_data['data']:
+                sym = item.get('symbol', '')
+                change_pct = float(item.get('riseFallRate', 0) or 0) * 100
+                last_price = float(item.get('lastPrice', 0) or 0)
+                vol = float(item.get('volume24', 0) or 0)
+                fee_info = fee_map.get(sym, {'zero_fee': False, 'maker': None, 'taker': None})
+                pairs.append({
+                    'symbol': sym,
+                    'last_price': last_price,
+                    'change_pct': round(change_pct, 4),
+                    'volume_24h': vol,
+                    'zero_fee': fee_info['zero_fee'],
+                    'maker_fee': fee_info['maker'],
+                    'taker_fee': fee_info['taker'],
+                })
+
+        # Sort by change_pct descending (biggest gainers first)
+        pairs.sort(key=lambda x: x['change_pct'], reverse=True)
+
+        return jsonify({'success': True, 'pairs': pairs, 'total': len(pairs)})
+    except Exception as e:
+        logging.error(f"Futures pairs error: {e}")
+        return jsonify({'success': False, 'error': str(e), 'pairs': []}), 500
+
+
 @app.route('/api/market_info')
 def api_market_info():
     """Диагностика: параметры контракта SOL/USDT на MEXC"""
@@ -271,6 +332,8 @@ def api_status():
             'leverage': state.get('leverage', 200),
             'take_profit_price': state.get('take_profit_price'),
             'counter_trade_enabled': state.get('counter_trade_enabled', True),
+            'pair_mode': state.get('pair_mode', None),
+            'active_symbol': state.get('active_symbol', 'SOL/USDT:USDT'),
         })
     except Exception as e:
         logging.error(f"Status error: {e}")
@@ -583,6 +646,25 @@ def api_reset_balance():
     except Exception as e:
         logging.error(f"Balance refresh error: {e}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/set_pair_mode', methods=['POST'])
+def api_set_pair_mode():
+    """Установить режим выбора торговой пары: top_gainer, top_loser, или None"""
+    try:
+        data = request.get_json()
+        mode = data.get('mode')  # 'top_gainer' | 'top_loser' | None
+        symbol = data.get('symbol', '')  # the actual symbol string
+        if mode not in ('top_gainer', 'top_loser', None):
+            return jsonify({'error': 'Invalid mode'}), 400
+        state['pair_mode'] = mode
+        if symbol:
+            state['active_symbol'] = symbol
+        logging.info(f"Pair mode set to: {mode}, symbol: {symbol}")
+        return jsonify({'pair_mode': mode, 'active_symbol': state['active_symbol']})
+    except Exception as e:
+        logging.error(f"Set pair mode error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/toggle_counter_trade', methods=['POST'])
 def api_toggle_counter_trade():

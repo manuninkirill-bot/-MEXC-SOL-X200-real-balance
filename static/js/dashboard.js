@@ -2,9 +2,15 @@ class TradingDashboard {
     constructor() {
         this.lastUpdateTime = null;
         this.isUpdating = false;
+        this.allPairs = [];
+        this.zeroFeeOnly = false;
+        this.pairMode = null; // 'top_gainer' | 'top_loser' | null
+        this.activePairSymbol = null;
         this.bindEvents();
         this.startDataUpdates();
         this.updateDashboard();
+        this.loadFuturesPairs();
+        setInterval(() => this.loadFuturesPairs(), 60000);
     }
 
     bindEvents() {
@@ -18,6 +24,151 @@ class TradingDashboard {
         document.querySelectorAll('.leverage-btn').forEach(btn => {
             btn.addEventListener('click', () => this.setLeverage(parseInt(btn.dataset.leverage)));
         });
+
+        document.getElementById('zero-fee-btn').addEventListener('click', () => this.toggleZeroFee());
+        document.getElementById('refresh-pairs-btn').addEventListener('click', () => this.loadFuturesPairs());
+        document.getElementById('mode-gainer-btn').addEventListener('click', () => this.setPairMode('top_gainer'));
+        document.getElementById('mode-loser-btn').addEventListener('click', () => this.setPairMode('top_loser'));
+    }
+
+    async setPairMode(mode) {
+        // Toggle off if already active
+        const newMode = this.pairMode === mode ? null : mode;
+        const pairs = this.getFilteredPairs();
+        let symbol = '';
+        if (newMode === 'top_gainer' && pairs.length > 0) symbol = pairs[0].symbol;
+        if (newMode === 'top_loser' && pairs.length > 0) symbol = pairs[pairs.length - 1].symbol;
+
+        try {
+            const res = await fetch('/api/set_pair_mode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: newMode, symbol })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                this.pairMode = newMode;
+                this.activePairSymbol = data.active_symbol || symbol;
+                this.updatePairModeButtons();
+                this.renderPairs();
+                this.updateActivePairBadge();
+                const modeName = newMode === 'top_gainer' ? '▲ Выросла #1' : newMode === 'top_loser' ? '▼ Упала #1' : 'Режим сброшен';
+                this.showNotification('success', `Торговая пара: ${this.activePairSymbol || 'SOL/USDT'} (${modeName})`);
+            }
+        } catch (e) {
+            this.showNotification('error', 'Ошибка смены режима пары');
+        }
+    }
+
+    updatePairModeButtons() {
+        const gBtn = document.getElementById('mode-gainer-btn');
+        const lBtn = document.getElementById('mode-loser-btn');
+        if (!gBtn || !lBtn) return;
+
+        if (this.pairMode === 'top_gainer') {
+            gBtn.classList.remove('btn-outline-success'); gBtn.classList.add('btn-success');
+            lBtn.classList.remove('btn-danger'); lBtn.classList.add('btn-outline-danger');
+        } else if (this.pairMode === 'top_loser') {
+            lBtn.classList.remove('btn-outline-danger'); lBtn.classList.add('btn-danger');
+            gBtn.classList.remove('btn-success'); gBtn.classList.add('btn-outline-success');
+        } else {
+            gBtn.classList.remove('btn-success'); gBtn.classList.add('btn-outline-success');
+            lBtn.classList.remove('btn-danger'); lBtn.classList.add('btn-outline-danger');
+        }
+    }
+
+    updateActivePairBadge() {
+        const badge = document.getElementById('active-pair-badge');
+        if (!badge) return;
+        if (this.pairMode && this.activePairSymbol) {
+            const icon = this.pairMode === 'top_gainer' ? '▲' : '▼';
+            badge.textContent = `${icon} ${this.activePairSymbol}`;
+            badge.className = `badge ${this.pairMode === 'top_gainer' ? 'bg-success' : 'bg-danger'}`;
+        } else {
+            badge.textContent = '—';
+            badge.className = 'badge bg-secondary';
+        }
+    }
+
+    getFilteredPairs() {
+        if (this.zeroFeeOnly) return this.allPairs.filter(p => p.zero_fee);
+        return this.allPairs;
+    }
+
+    async loadFuturesPairs() {
+        try {
+            const res = await fetch('/api/futures_pairs');
+            const data = await res.json();
+            if (data.success && data.pairs) {
+                this.allPairs = data.pairs;
+                this.renderPairs();
+            }
+        } catch (e) {
+            console.error('Futures pairs load error:', e);
+        }
+    }
+
+    toggleZeroFee() {
+        this.zeroFeeOnly = !this.zeroFeeOnly;
+        const btn = document.getElementById('zero-fee-btn');
+        if (this.zeroFeeOnly) {
+            btn.classList.remove('btn-outline-success');
+            btn.classList.add('btn-success');
+        } else {
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-success');
+        }
+        this.renderPairs();
+    }
+
+    renderPairs() {
+        const tbody = document.getElementById('pairs-tbody');
+        const countEl = document.getElementById('pairs-count');
+        if (!tbody) return;
+
+        const pairs = this.getFilteredPairs();
+
+        if (countEl) {
+            countEl.textContent = `(${pairs.length}${this.zeroFeeOnly ? ' · 0% fee' : ''})`;
+        }
+
+        if (pairs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Нет данных</td></tr>`;
+            return;
+        }
+
+        const gainerSym = this.pairMode === 'top_gainer' ? (pairs[0] ? pairs[0].symbol : null) : null;
+        const loserSym = this.pairMode === 'top_loser' ? (pairs[pairs.length - 1] ? pairs[pairs.length - 1].symbol : null) : null;
+
+        tbody.innerHTML = pairs.map((p, i) => {
+            const pct = p.change_pct;
+            const pctClass = pct > 0 ? 'text-success' : pct < 0 ? 'text-danger' : 'text-muted';
+            const pctStr = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+            const price = p.last_price > 0.001
+                ? p.last_price.toFixed(p.last_price >= 1 ? 4 : 8)
+                : p.last_price.toExponential(4);
+            const feeStr = p.zero_fee
+                ? '<span class="badge bg-success" style="font-size:0.7em;">0%</span>'
+                : (p.maker_fee !== null ? `${(p.maker_fee * 100).toFixed(4)}%` : '—');
+
+            let rowStyle = '';
+            let activeIcon = '';
+            if (p.symbol === gainerSym) {
+                rowStyle = 'style="background:rgba(34,197,94,0.18);border-left:3px solid #22c55e;"';
+                activeIcon = ' <span class="badge bg-success" style="font-size:0.65em;">ACTIVE</span>';
+            } else if (p.symbol === loserSym) {
+                rowStyle = 'style="background:rgba(239,68,68,0.18);border-left:3px solid #ef4444;"';
+                activeIcon = ' <span class="badge bg-danger" style="font-size:0.65em;">ACTIVE</span>';
+            }
+
+            return `<tr ${rowStyle}>
+                <td class="ps-3 text-muted">${i + 1}</td>
+                <td class="fw-bold">${p.symbol}${activeIcon}</td>
+                <td class="text-end">${price}</td>
+                <td class="text-end ${pctClass} fw-bold">${pctStr}</td>
+                <td class="text-end pe-3">${feeStr}</td>
+            </tr>`;
+        }).join('');
     }
 
     async setLeverage(leverage) {
@@ -190,6 +341,14 @@ class TradingDashboard {
             // Counter trade button
             if (data.counter_trade_enabled !== undefined) this.updateCounterTradeButton(data.counter_trade_enabled);
 
+            // Pair mode sync from server
+            if (data.pair_mode !== undefined && data.pair_mode !== this.pairMode) {
+                this.pairMode = data.pair_mode;
+                this.activePairSymbol = data.active_symbol || null;
+                this.updatePairModeButtons();
+                this.updateActivePairBadge();
+            }
+
             this.lastUpdateTime = new Date();
         } catch (error) {
             console.error('Dashboard update error:', error);
@@ -200,49 +359,42 @@ class TradingDashboard {
 
     updateSARDirections(directions) {
         if (!directions) return;
-        const timeframes = ['1m', '5m', '15m'];
-        let allMatch = true, matchDirection = null;
 
-        timeframes.forEach(tf => {
-            const element = document.getElementById(`sar-${tf}`);
-            const container = document.getElementById(`sar-${tf}-container`);
-            const direction = directions[tf];
-            if (element && container) {
-                element.className = 'badge sar-badge';
-                if (direction === 'long') {
-                    element.textContent = 'LONG';
-                    element.classList.add('bg-success');
-                    container.classList.remove('text-danger', 'text-muted');
-                    container.classList.add('text-success');
-                    if (matchDirection === null) matchDirection = 'long';
-                    else if (matchDirection !== 'long') allMatch = false;
-                } else if (direction === 'short') {
-                    element.textContent = 'SHORT';
-                    element.classList.add('bg-danger');
-                    container.classList.remove('text-success', 'text-muted');
-                    container.classList.add('text-danger');
-                    if (matchDirection === null) matchDirection = 'short';
-                    else if (matchDirection !== 'short') allMatch = false;
-                } else {
-                    element.textContent = 'N/A';
-                    element.classList.add('bg-secondary');
-                    container.classList.remove('text-success', 'text-danger');
-                    container.classList.add('text-muted');
-                    allMatch = false;
-                }
+        // Only show Position 1 (1m)
+        const element = document.getElementById('sar-1m');
+        const container = document.getElementById('sar-1m-container');
+        const direction = directions['1m'];
+
+        if (element && container) {
+            element.className = 'badge sar-badge';
+            if (direction === 'long') {
+                element.textContent = 'LONG';
+                element.classList.add('bg-success');
+                container.classList.remove('text-danger', 'text-muted');
+                container.classList.add('text-success');
+            } else if (direction === 'short') {
+                element.textContent = 'SHORT';
+                element.classList.add('bg-danger');
+                container.classList.remove('text-success', 'text-muted');
+                container.classList.add('text-danger');
             } else {
-                allMatch = false;
+                element.textContent = 'N/A';
+                element.classList.add('bg-secondary');
+                container.classList.remove('text-success', 'text-danger');
+                container.classList.add('text-muted');
             }
-        });
+        }
 
-        // Сигнал: реальное направление SAR (1m + 15m)
+        // Signal based on 1m only
         const d1m = directions['1m'];
-        const d15m = directions['15m'];
         const signalEl = document.getElementById('signal-status');
         if (signalEl) {
-            if (d1m && d15m && d1m === d15m) {
-                signalEl.textContent = d1m === 'long' ? 'LONG SIGNAL' : 'SHORT SIGNAL';
-                signalEl.className = `badge signal-badge ${d1m === 'long' ? 'bg-success' : 'bg-danger'}`;
+            if (d1m === 'long') {
+                signalEl.textContent = 'LONG SIGNAL';
+                signalEl.className = 'badge signal-badge bg-success';
+            } else if (d1m === 'short') {
+                signalEl.textContent = 'SHORT SIGNAL';
+                signalEl.className = 'badge signal-badge bg-danger';
             } else {
                 signalEl.textContent = 'NO SIGNAL';
                 signalEl.className = 'badge bg-secondary signal-badge';

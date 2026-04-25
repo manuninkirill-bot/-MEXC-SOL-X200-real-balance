@@ -64,6 +64,8 @@ state = {
     "counter_trade_enabled": True,  # контр-трейд: открывать против сигнала
     "trades": [],  # список последних сделок
     "leverage": LEVERAGE,  # текущее плечо (изменяется через API)
+    "pair_mode": None,  # 'top_gainer' | 'top_loser' | None
+    "active_symbol": SYMBOL,  # активная торговая пара
 }
 
 class TradingBot:
