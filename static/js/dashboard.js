@@ -25,7 +25,6 @@ class TradingDashboard {
             btn.addEventListener('click', () => this.setLeverage(parseInt(btn.dataset.leverage)));
         });
 
-        document.getElementById('zero-fee-btn').addEventListener('click', () => this.toggleZeroFee());
         document.getElementById('refresh-pairs-btn').addEventListener('click', () => this.loadFuturesPairs());
         document.getElementById('mode-gainer-btn').addEventListener('click', () => this.setPairMode('top_gainer'));
         document.getElementById('mode-loser-btn').addEventListener('click', () => this.setPairMode('top_loser'));

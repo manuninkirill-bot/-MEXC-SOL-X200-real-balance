@@ -1,14 +1,15 @@
 {
-  "balance": 17.679919771027922,
-  "available": 15.901255810159922,
+  "balance": 17.65339989137138,
+  "available": 8.81344000585742,
   "in_position": true,
   "position": {
     "side": "short",
-    "entry_price": 85.11,
-    "size_base": 4.179682671526261,
-    "notional": 355.73279217360005,
-    "margin": 1.7786639608680002,
-    "entry_time": "2026-04-20T14:41:07.262115"
+    "entry_price": 86.43,
+    "size_base": 1.0227883704169802,
+    "notional": 88.39959885513962,
+    "margin": 8.839959885513961,
+    "entry_time": "2026-04-25T15:01:03.890673",
+    "trade_number": 1
   },
   "last_trade_time": null,
   "last_1m_dir": "short",
@@ -305,17 +306,20 @@
       "close_reason": "sar_reversal"
     }
   ],
-  "leverage": 200,
+  "leverage": 10,
+  "pair_mode": null,
+  "active_symbol": "SOL/USDT:USDT",
   "sar_directions": {
     "1m": "short",
     "5m": "short",
-    "15m": "long"
+    "15m": "short"
   },
   "live_price": 85.2,
   "real_position": null,
   "trailing_stop_price": null,
   "trailing_stop_order_id": null,
   "trailing_stop_set_at_roi": null,
-  "take_profit_price": 84.8972,
-  "take_profit_contracts": 42
+  "take_profit_price": 82.1085,
+  "take_profit_contracts": null,
+  "telegram_trade_counter": 1
 }
