@@ -319,13 +319,27 @@ def api_status():
             or (sar_monitor_instance.get_current_price() if sar_monitor_instance else 3000.0)
         )
         
+        # Enrich paper position with leverage/liq if missing
+        pos_out = state.get('real_position') or state.get('position')
+        if pos_out and not pos_out.get('leverage'):
+            from trading_bot import smart_round
+            lev = float(state.get('leverage', 10))
+            ep = float(pos_out.get('entry_price', 0))
+            side = pos_out.get('side', 'long')
+            mmr = 0.005
+            if ep > 0:
+                liq = smart_round(ep * (1 - 1/lev + mmr)) if side == 'long' else smart_round(ep * (1 + 1/lev - mmr))
+                pos_out = dict(pos_out)
+                pos_out['leverage'] = int(lev)
+                pos_out['liquidation_price'] = liq
+
         return jsonify({
             'bot_running': bot_running,
             'paper_mode': os.getenv('RUN_IN_PAPER', '1') == '1',
             'balance': state.get('balance', 1000),
             'available': state.get('available', 1000),
             'in_position': state.get('in_position', False),
-            'position': state.get('real_position') or state.get('position'),
+            'position': pos_out,
             'current_price': current_price,
             'directions': directions,
             'sar_directions': directions,

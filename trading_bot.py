@@ -261,21 +261,28 @@ class TradingBot:
                 state["telegram_trade_counter"] += 1
             
             state["in_position"] = True
+            lev = state.get("leverage", LEVERAGE)
+            pos_side = "long" if side == "buy" else "short"
+            mmr = 0.005  # maintenance margin rate ~0.5%
+            if pos_side == "long":
+                liq = smart_round(price * (1 - 1/lev + mmr))
+            else:
+                liq = smart_round(price * (1 + 1/lev - mmr))
             state["position"] = {
-                "side": "long" if side == "buy" else "short",
+                "side": pos_side,
                 "entry_price": price,
                 "size_base": amount_base,
                 "notional": notional,
                 "margin": margin,
                 "entry_time": entry_time.isoformat(),
                 "trade_number": state["telegram_trade_counter"],
-                "symbol": state.get("active_symbol", "SOL_USDT")
+                "symbol": state.get("active_symbol", "SOL_USDT"),
+                "leverage": lev,
+                "liquidation_price": liq
             }
             
             # --- Тейк-профит 30% ROI (paper mode) ---
-            lev = state.get("leverage", LEVERAGE)
             tp_delta = price * (self.TP_ROI / lev)
-            pos_side = "long" if side == "buy" else "short"
             tp_price = smart_round(price + tp_delta) if pos_side == "long" else smart_round(price - tp_delta)
             state["take_profit_price"] = tp_price
             state["take_profit_contracts"] = None
