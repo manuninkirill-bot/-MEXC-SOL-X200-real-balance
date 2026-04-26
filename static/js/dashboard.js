@@ -58,8 +58,6 @@ class TradingDashboard {
         document.getElementById('clear-position-btn').addEventListener('click', () => this.clearCurrentPosition());
         document.getElementById('mode-gainer-btn').addEventListener('click', () => this.setPairMode('top_gainer'));
         document.getElementById('mode-loser-btn').addEventListener('click', () => this.setPairMode('top_loser'));
-        document.getElementById('manual-long-btn').addEventListener('click', () => this.manualOpenPosition('long'));
-        document.getElementById('manual-short-btn').addEventListener('click', () => this.manualOpenPosition('short'));
         document.querySelectorAll('.open-strategy-btn').forEach(btn => {
             btn.addEventListener('click', () => this.setOpenStrategy(btn.dataset.combo));
         });
