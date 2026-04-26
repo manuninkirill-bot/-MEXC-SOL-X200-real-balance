@@ -688,7 +688,10 @@ class TradingDashboard {
 
         const timeEl = document.getElementById('pos-time');
         if (timeEl && position.entry_time) {
-            const elapsed = Math.floor((Date.now() - new Date(position.entry_time).getTime()) / 1000);
+            // Force UTC parsing: append 'Z' if no timezone info present
+            const raw = position.entry_time;
+            const utcStr = (raw.endsWith('Z') || raw.includes('+') || raw.includes('-', 10)) ? raw : raw + 'Z';
+            const elapsed = Math.max(0, Math.floor((Date.now() - new Date(utcStr).getTime()) / 1000));
             const h = Math.floor(elapsed / 3600);
             const m = Math.floor((elapsed % 3600) / 60);
             const s = elapsed % 60;
