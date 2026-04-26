@@ -1,3 +1,26 @@
+/**
+ * Format a price number to a human-readable decimal string.
+ * Never produces scientific notation. Chooses decimal places based on magnitude.
+ *   >= 1000   → 2 decimals   e.g. 1234.56
+ *   >= 1      → 4 decimals   e.g. 1.2345
+ *   >= 0.01   → 6 decimals   e.g. 0.012345
+ *   >= 0.0001 → 8 decimals   e.g. 0.00012345
+ *   smaller   → up to 12     e.g. 0.0000001234
+ */
+function formatPrice(value, prefix = '$') {
+    const n = parseFloat(value);
+    if (isNaN(n)) return '—';
+    let decimals;
+    const abs = Math.abs(n);
+    if      (abs === 0)     decimals = 2;
+    else if (abs >= 1000)   decimals = 2;
+    else if (abs >= 1)      decimals = 4;
+    else if (abs >= 0.01)   decimals = 6;
+    else if (abs >= 0.0001) decimals = 8;
+    else                    decimals = 12;
+    return prefix + n.toFixed(decimals);
+}
+
 class TradingDashboard {
     constructor() {
         this.lastUpdateTime = null;
@@ -184,9 +207,7 @@ class TradingDashboard {
             const pct = p.change_pct;
             const pctClass = pct > 0 ? 'text-success' : pct < 0 ? 'text-danger' : 'text-muted';
             const pctStr = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-            const price = p.last_price > 0.001
-                ? p.last_price.toFixed(p.last_price >= 1 ? 4 : 8)
-                : p.last_price.toExponential(4);
+            const price = formatPrice(p.last_price, '');
             const feeStr = p.zero_fee
                 ? '<span class="badge bg-success" style="font-size:0.7em;">0%</span>'
                 : (p.maker_fee !== null ? `${(p.maker_fee * 100).toFixed(4)}%` : '—');
@@ -482,7 +503,7 @@ class TradingDashboard {
 
             // Price
             if (data.current_price)
-                document.getElementById('current-price').textContent = `$${parseFloat(data.current_price).toFixed(2)}`;
+                document.getElementById('current-price').textContent = formatPrice(data.current_price);
 
             // SAR directions
             if (data.sar_directions) this.updateSARDirections(data.sar_directions);
@@ -606,11 +627,11 @@ class TradingDashboard {
         const colorClass = position.side === 'long' ? 'text-success ms-1' : 'text-danger ms-1';
 
         const entryEl = document.getElementById('pos-entry');
-        if (entryEl) { entryEl.textContent = `$${parseFloat(position.entry_price).toFixed(3)}`; entryEl.className = colorClass; }
+        if (entryEl) { entryEl.textContent = formatPrice(position.entry_price); entryEl.className = colorClass; }
 
         const markEl = document.getElementById('pos-mark');
         const markPrice = position.mark_price || currentPrice;
-        if (markEl && markPrice) { markEl.textContent = `$${parseFloat(markPrice).toFixed(3)}`; }
+        if (markEl && markPrice) { markEl.textContent = formatPrice(markPrice); }
 
         const sizeEl = document.getElementById('pos-size');
         if (sizeEl) { sizeEl.textContent = `${parseFloat(position.size_base).toFixed(4)} SOL`; sizeEl.className = colorClass; }
@@ -649,7 +670,7 @@ class TradingDashboard {
         // Цена ликвидации
         const liqEl = document.getElementById('pos-liq');
         if (liqEl && position.liquidation_price) {
-            liqEl.textContent = `$${parseFloat(position.liquidation_price).toFixed(3)}`;
+            liqEl.textContent = formatPrice(position.liquidation_price);
         }
 
         // Плечо
@@ -674,7 +695,7 @@ class TradingDashboard {
         if (tpEl && tpWrap) {
             if (position._take_profit_price) {
                 tpWrap.style.display = '';
-                tpEl.textContent = `$${parseFloat(position._take_profit_price).toFixed(3)}`;
+                tpEl.textContent = formatPrice(position._take_profit_price);
             } else {
                 tpWrap.style.display = 'none';
             }
@@ -716,7 +737,7 @@ class TradingDashboard {
                     <small class="text-muted">${exitDate}</small>
                 </div>
                 <div class="mt-1">
-                    <small class="text-muted">Entry: $${trade.entry_price.toFixed(2)} → Exit: $${trade.exit_price.toFixed(2)}</small>
+                    <small class="text-muted">Entry: ${formatPrice(trade.entry_price)} → Exit: ${formatPrice(trade.exit_price)}</small>
                 </div>
             </div>`;
         }).join('');
