@@ -1,33 +1,33 @@
 {
-  "balance": 17.09451814325507,
-  "available": 0.0,
-  "in_position": true,
-  "position": {
-    "side": "long",
-    "entry_price": 0.016767,
-    "size_base": 5105.325472927907,
-    "notional": 85.60099220458221,
-    "margin": 8.560099220458222,
-    "entry_time": "2026-04-26T07:13:08.850967",
-    "trade_number": 10,
-    "symbol": "AGT_USDT",
-    "leverage": 10,
-    "liquidation_price": 0.01517
-  },
+  "balance": 8.044454710769376,
+  "available": 8.044454710769376,
+  "in_position": false,
+  "position": null,
   "last_trade_time": null,
   "last_1m_dir": "long",
   "one_min_flip_count": 0,
   "skip_next_signal": false,
   "counter_trade_enabled": false,
-  "trades": [],
+  "trades": [
+    {
+      "time": "2026-04-26T07:25:06.109258",
+      "side": "long",
+      "entry_price": 0.016767,
+      "exit_price": 0.016671,
+      "size_base": 5105.325472927907,
+      "pnl": -0.5156445096888453,
+      "duration": "11\u043c 57\u0441",
+      "close_reason": "sar_reversal"
+    }
+  ],
   "leverage": 10,
   "pair_mode": "top_gainer",
   "active_symbol": "AGT_USDT",
   "sar_directions": {
-    "1m": "long",
-    "5m": "long",
+    "1m": "short",
+    "5m": "short",
     "15m": "long",
-    "30m": "short"
+    "30m": "long"
   },
   "live_price": 0.016767,
   "real_position": null,
