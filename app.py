@@ -100,11 +100,12 @@ def sar_monitor_loop():
                 side = pos.get('side')
                 sc = pos.get('size_contracts')
                 if ep > 0 and side and lev:
+                    from trading_bot import smart_round
                     tp_delta = ep * (0.50 / lev)
-                    tp_price = round(ep + tp_delta, 4) if side == 'long' else round(ep - tp_delta, 4)
+                    tp_price = smart_round(ep + tp_delta) if side == 'long' else smart_round(ep - tp_delta)
                     state['take_profit_price'] = tp_price
                     state['take_profit_contracts'] = sc
-                    logging.info(f"TP auto-set for existing position: ${tp_price:.4f} (entry={ep}, lev={lev})")
+                    logging.info(f"TP auto-set for existing position: ${tp_price} (entry={ep}, lev={lev})")
                     # Попытка разместить TP ордер на бирже
                     if sar_monitor_instance and sc:
                         sar_monitor_instance.place_take_profit_order(side, sc, tp_price)

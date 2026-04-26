@@ -6,12 +6,21 @@ import random
 import urllib.request
 from datetime import datetime, timedelta
 
+import math
 import ccxt
 import pandas as pd
 from ta.trend import PSARIndicator
 import logging
 from market_simulator import MarketSimulator
 from signal_sender import SignalSender
+
+def smart_round(price: float) -> float:
+    """Round price keeping at least 4 significant figures, never loses precision for tiny prices."""
+    if price == 0:
+        return 0.0
+    magnitude = math.floor(math.log10(abs(price)))  # e.g. -4 for 0.000115
+    decimals = max(4, -magnitude + 3)                # at least 4 sig figs after leading zeros
+    return round(price, decimals)
 
 # ========== Прямой REST API (MEXC + Binance fallback) ==========
 def _rest_get(url, timeout=10):
@@ -267,7 +276,7 @@ class TradingBot:
             lev = state.get("leverage", LEVERAGE)
             tp_delta = price * (self.TP_ROI / lev)
             pos_side = "long" if side == "buy" else "short"
-            tp_price = round(price + tp_delta, 4) if pos_side == "long" else round(price - tp_delta, 4)
+            tp_price = smart_round(price + tp_delta) if pos_side == "long" else smart_round(price - tp_delta)
             state["take_profit_price"] = tp_price
             state["take_profit_contracts"] = None
             logging.info(f"TP target (paper): ${tp_price:.4f} (entry=${price:.4f}, ROI=30%, lev={lev})")
@@ -320,7 +329,7 @@ class TradingBot:
                 }
                 # --- Тейк-профит при 30% ROI ---
                 tp_delta = price * (self.TP_ROI / lev)
-                tp_price = round(price + tp_delta, 4) if pos_side == "long" else round(price - tp_delta, 4)
+                tp_price = smart_round(price + tp_delta) if pos_side == "long" else smart_round(price - tp_delta)
                 state["take_profit_price"] = tp_price
                 state["take_profit_contracts"] = int(contracts)
                 state["trailing_stop_price"] = None  # убрать старый стоп

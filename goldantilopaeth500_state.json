@@ -32,7 +32,7 @@
   "trailing_stop_price": null,
   "trailing_stop_order_id": null,
   "trailing_stop_set_at_roi": null,
-  "take_profit_price": 0.0001,
+  "take_profit_price": 0.00011845,
   "take_profit_contracts": null,
   "telegram_trade_counter": 9,
   "open_strategy": "1m",
