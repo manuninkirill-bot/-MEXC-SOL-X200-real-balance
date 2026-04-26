@@ -422,7 +422,7 @@ def api_set_signal_timeframe():
     state['signal_timeframe'] = tf
     return jsonify({'signal_timeframe': tf, 'message': f'Сигнальный таймфрейм: {tf}'})
 
-VALID_COMBOS = ('1m', '5m', '15m', '30m', '1+5', '1+15', '5+15', '1+5+15', 'ALL')
+VALID_COMBOS = ('1m', '5m', '15m', '30m', '1+5', '1+15', '5+15', '1+5+15', '30+1', '30+5', 'ALL')
 
 @app.route('/api/set_open_strategy', methods=['POST'])
 def api_set_open_strategy():
