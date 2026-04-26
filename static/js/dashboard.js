@@ -505,6 +505,13 @@ class TradingDashboard {
             if (data.current_price)
                 document.getElementById('current-price').textContent = formatPrice(data.current_price);
 
+            // Dynamic price card label — base token of active pair
+            const priceLabelEl = document.getElementById('current-price-label');
+            if (priceLabelEl && data.analyzed_symbol) {
+                const base = data.analyzed_symbol.split('/')[0].split('_')[0].split(':')[0];
+                priceLabelEl.textContent = `${base} / USDT`;
+            }
+
             // SAR directions
             if (data.sar_directions) this.updateSARDirections(data.sar_directions);
 
@@ -634,7 +641,11 @@ class TradingDashboard {
         if (markEl && markPrice) { markEl.textContent = formatPrice(markPrice); }
 
         const sizeEl = document.getElementById('pos-size');
-        if (sizeEl) { sizeEl.textContent = `${parseFloat(position.size_base).toFixed(4)} SOL`; sizeEl.className = colorClass; }
+        if (sizeEl) {
+            const baseTok = (position.symbol || 'SOL_USDT').split('_')[0].split('/')[0].split(':')[0];
+            sizeEl.textContent = `${parseFloat(position.size_base).toFixed(4)} ${baseTok}`;
+            sizeEl.className = colorClass;
+        }
 
         const notionalEl = document.getElementById('pos-notional');
         if (notionalEl) { notionalEl.textContent = `$${parseFloat(position.notional).toFixed(4)}`; notionalEl.className = colorClass; }
